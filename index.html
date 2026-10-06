@@ -182,6 +182,8 @@
     font-size:.98cqw;line-height:1.42;margin:.85em 0 0;
   }
   .intro .punch + .punch{margin-top:.3em;}
+  /* mỗi dòng chốt nằm gọn 1 dòng: nowrap + JS tự thu cỡ chữ vừa khung (xem fitPunchLines) */
+  .intro .punch .pl{display:inline-block;white-space:nowrap;}
 
   .fund-hint{
     display:inline-flex;align-items:center;gap:.45cqw;
@@ -501,19 +503,19 @@
           <p>Ngày 18/10, Thiên Minh sẽ tham gia ghi hình Mái ấm gia đình Việt – Tôn Hoa Sen tại Ninh Bình, đồng hành cùng chương trình để hỗ trợ những gia đình có hoàn cảnh khó khăn.</p>
           <p class="hl">Đặc biệt, mỗi lượt bình chọn organic cho Thiên Minh tại L’OFFICIEL Beauty Choice Awards 2026 – không tính các lượt vote mua bằng tiền – sẽ được quy đổi thành <b>5.000 đồng</b> và gửi đến các gia đình trong chương trình mà Minh sắp tham gia.</p>
           <p>Vì vậy, nếu bạn yêu mến Thiên Minh, hãy dành một lượt bình chọn.</p>
-          <p class="punch">Bạn không chỉ đang vote cho một “Longevity Icon”.<br>Bạn đang cùng Minh biến sự yêu mến thành một hành động tử tế.</p>
-          <p class="punch">Một vote = 5.000 đồng sẻ chia.<br>Cùng vote cho Thiên Minh. Cùng lan tỏa điều tốt đẹp.</p>
+          <p class="punch"><span class="pl">Bạn không chỉ đang vote cho một “Longevity Icon”.</span><br><span class="pl">Bạn đang cùng Minh biến sự yêu mến thành một hành động tử tế.</span></p>
+          <p class="punch"><span class="pl">Một vote = 5.000 đồng sẻ chia.</span><br><span class="pl">Cùng vote cho Thiên Minh. Cùng lan tỏa điều tốt đẹp.</span></p>
         </div>
 
         <div class="stats">
           <div class="sparkles" aria-hidden="true"><i></i><i class="lg"></i><i></i><i></i><i class="lg"></i><i></i><i></i><i class="lg"></i><i></i><i></i></div>
           <div class="card">
-            <div class="k">Tổng vote free tích lũy</div>
+            <div class="k">Tổng vote free tích&nbsp;lũy</div>
             <div class="v votes"><span id="freeVotes" data-fit="2.42">0</span><em>vote</em></div>
             <div class="note">(Tính từ 14:45 ngày 06/10/2026)</div>
           </div>
           <div class="card">
-            <div class="k">Quỹ donate dự kiến</div>
+            <div class="k">Quỹ donate dự&nbsp;kiến</div>
             <div class="v money"><span id="totalMoney" data-fit="2.42">0</span><em>VNĐ</em></div>
             <div class="note">5.000 VNĐ × mỗi vote free</div>
           </div>
@@ -616,6 +618,31 @@
     sparkleBox.classList.add('run');
   }
 
+  /* Giữ nguyên 1 dòng cho các cụm chữ ngắn (2 câu chốt, nhãn 2 thẻ số liệu):
+     đo bề ngang thật của từng dòng rồi thu cỡ chữ — dùng chung 1 tỉ lệ cho cả cụm
+     nên các dòng vẫn đồng cỡ nhau. Khung rộng thì không đổi gì. */
+  function fitLineGroup(hostSel, lineSel) {
+    const hosts = Array.from(document.querySelectorAll(hostSel));
+    if (!hosts.length) return;
+    hosts.forEach(h => { h.style.fontSize = ''; });
+    let k = 1;
+    hosts.forEach(h => {
+      const avail = h.clientWidth;
+      if (!avail) return;
+      h.querySelectorAll(lineSel).forEach(sp => {
+        const w = sp.getBoundingClientRect().width;
+        if (w > 0) k = Math.min(k, avail / w);
+      });
+    });
+    if (k < 1) hosts.forEach(h => {
+      const base = parseFloat(getComputedStyle(h).fontSize);
+      h.style.fontSize = (base * k).toFixed(2) + 'px';
+    });
+  }
+  function fitLineGroups() {
+    fitLineGroup('.intro .punch', '.pl');
+  }
+
   let currentMoney = 0, currentVotes = 0;
   async function fetchData() {
     try {
@@ -650,6 +677,10 @@
 
   /* lấp lánh quanh 2 thẻ số liệu mỗi lần mở trang */
   window.addEventListener('load', () => setTimeout(runSparkles, 350));
+
+  fitLineGroups();
+  window.addEventListener('load', fitLineGroups);
+  window.addEventListener('resize', fitLineGroups);
 
   /* ===== Đếm ngược tới hạn chót: 13:30 ngày 14/10/2026 ===== */
   const endTime = new Date("October 14, 2026 13:30:00").getTime();
