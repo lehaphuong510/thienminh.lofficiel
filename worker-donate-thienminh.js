@@ -1,6 +1,5 @@
 const KV_KEY = "donate_data";
 const BASE = "https://eventista-platform-api.1vote.vn/v2/tenants/ucFVX5/events/EVENT_lTuLn/candidates/cZUR";
-const VOTES_PER_ACTION = 3;
 const MONEY_PER_VOTE = 5000;
 const WRITE_EVERY_MS = 300000;
 
@@ -58,7 +57,7 @@ async function countFreeVotes(env) {
       const deltaTx = txTotal - prevTx;
       if (actions > deltaTx) actions = 0;
     }
-    if (actions > 0) freeVotes += actions * VOTES_PER_ACTION;
+    if (actions > 0) freeVotes += actions; // 1 luot binh chon mien phi = 1 don vi hien thi
   }
 
   const now = Date.now();
