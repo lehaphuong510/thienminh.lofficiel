@@ -1,18 +1,3 @@
-<!--
-  BEAUTY CHOICE AWARDS 2026 — THIÊN MINH × MÁI ẤM GIA ĐÌNH VIỆT
-  Trang 1 màn 16:9, chia 3 cột:
-   - Trái : chữ VOTE FOR THIÊN MINH + poster giải + đếm ngược + nút Bình chọn ngay
-   - Giữa : tiêu đề + lời mở đầu (2 cột, 2 câu chốt trải ngang) + 2 thẻ số liệu + dải trao tặng
-   - Phải : THIÊN MINH × MÁI ẤM GIA ĐÌNH VIỆT + 6 ảnh (trắng đen/màu xen kẽ)
-
-  CÁCH CHỈNH SỬA NHANH
-  - Ảnh: thay chuỗi data:image/jpeg;base64,... trong src của từng <img>.
-  - Lời mở đầu: sửa trong <div class="intro">; đoạn được highlight có class "hl".
-  - Thông tin chương trình: nằm trong popup #program-modal (bấm dải .fund để mở).
-  - Hạn chót đếm ngược: endTime trong <script> cuối file.
-  - Link nút "Bình chọn ngay": href của các <a class="cta">.
-  - Mọi kích thước dùng đơn vị cqw nên tự co giãn đúng tỉ lệ 16:9.
--->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -505,7 +490,7 @@
           <p>Và lần này, mỗi lượt vote còn có thể trở thành một sự sẻ chia.</p>
           <p>Ngày 18/10, Thiên Minh sẽ tham gia ghi hình Mái ấm gia đình Việt – Tôn Hoa Sen tại Ninh Bình, đồng hành cùng chương trình để hỗ trợ những gia đình có hoàn cảnh khó khăn.</p>
           <p class="hl">Đặc biệt, mỗi vote organic cho Thiên Minh tại L’OFFICIEL Beauty Choice Awards 2026 – không tính các vote mua bằng tiền – sẽ được quy đổi thành <b>5.000 đồng</b> và gửi đến các gia đình trong chương trình mà Minh sắp tham gia.</p>
-          <p>Vì vậy, nếu bạn yêu mến Thiên Minh, hãy dành một lượt bình chọn.</p>
+          
           <p class="punch"><span class="pl">Bạn không chỉ đang vote cho một “Longevity Icon”.</span><br><span class="pl">Bạn đang cùng Minh biến sự yêu mến thành một hành động tử tế.</span></p>
           <p class="punch"><span class="pl">Một vote = 5.000 đồng sẻ chia.</span><br><span class="pl">Cùng vote cho Thiên Minh. Cùng lan tỏa điều tốt đẹp.</span></p>
         </div>
@@ -513,14 +498,14 @@
         <div class="stats">
           <div class="sparkles" aria-hidden="true"><i></i><i class="lg"></i><i></i><i></i><i class="lg"></i><i></i><i></i><i class="lg"></i><i></i><i></i></div>
           <div class="card">
-            <div class="k">Tổng vote free tích&nbsp;lũy</div>
+            <div class="k">Organic vote tích&nbsp;lũy</div>
             <div class="v votes"><span id="freeVotes" data-fit="2.42">0</span><em>vote</em></div>
             <div class="note">(Tính từ 14:45 ngày 06/10/2026)</div>
           </div>
           <div class="card">
             <div class="k">Quỹ donate dự&nbsp;kiến</div>
             <div class="v money"><span id="totalMoney" data-fit="2.42">0</span><em>VNĐ</em></div>
-            <div class="note">5.000 VNĐ × mỗi vote free</div>
+            <div class="note">5.000 VNĐ × mỗi organic vote</div>
           </div>
         </div>
 
