@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOTE FOR THIÊN MINH - L'OFFICIEL 2026</title>
+    <title>Donate Thiên Minh - BCA 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js"></script>
     <style>
@@ -13,40 +13,60 @@
             color: white;
             font-family: 'Montserrat', sans-serif;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+            align-items: center; 
             min-height: 100vh;
         }
-        .container { text-align: center; max-width: 600px; padding: 20px; }
+        .container { text-align: center; max-width: 800px; padding: 40px 20px; width: 100%; box-sizing: border-box; }
         
         /* Box Thời gian */
-        .timer-box { margin-bottom: 30px; background: rgba(255, 255, 255, 0.1); padding: 15px 30px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); }
+        .timer-box { margin-bottom: 30px; background: rgba(255, 255, 255, 0.1); padding: 15px 30px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.2); display: inline-block; }
         .timer-title { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #ff9a9e; }
         .timer-value { font-size: 28px; font-weight: 700; margin-top: 5px; }
 
         /* Box Số Liệu */
-        .stats-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 40px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } }
+        
         .stat-card {
             background: rgba(0, 0, 0, 0.4); border-radius: 20px; padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;
         }
         .stat-label { font-size: 16px; color: #a8b0d3; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
+        .stat-subtext { font-size: 12px; color: #888; margin-top: 8px; font-style: italic; }
         
         .stat-number.money { 
-            font-size: 48px; font-weight: 900; 
+            font-size: 42px; font-weight: 900; 
             background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             text-shadow: 0px 4px 15px rgba(252, 182, 159, 0.4);
         }
         .stat-number.votes { font-size: 36px; font-weight: 700; color: #fff; }
 
-        /* Hiệu ứng lấp lánh (Sparkle) khi dừng đếm */
+        .last-updated { font-size: 13px; color: #a8b0d3; margin-top: 10px; margin-bottom: 40px; }
+
         @keyframes sparkle {
             0% { text-shadow: 0 0 10px #fff, 0 0 20px #fcb69f, 0 0 30px #fcb69f; transform: scale(1); }
             50% { text-shadow: 0 0 20px #fff, 0 0 40px #ffecd2, 0 0 60px #ffecd2; transform: scale(1.05); }
             100% { text-shadow: 0 0 10px #fff, 0 0 20px #fcb69f, 0 0 30px #fcb69f; transform: scale(1); }
         }
         .sparkle-active { animation: sparkle 1s ease-in-out; }
+
+        /* --- PHẦN ALBUM MASONRY (PINTEREST STYLE) --- */
+        .album-section { margin-top: 40px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); text-align: left; }
+        .album-title { font-size: 24px; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .album-masonry {
+            column-count: 3;
+            column-gap: 15px;
+            width: 100%;
+        }
+        @media (max-width: 768px) { .album-masonry { column-count: 2; } }
+        @media (max-width: 480px) { .album-masonry { column-count: 1; } }
+
+        .album-item { break-inside: avoid; margin-bottom: 15px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .album-item img { width: 100%; display: block; border-radius: 12px; transition: transform 0.4s ease; }
+        .album-item img:hover { transform: scale(1.08); cursor: pointer; }
 
     </style>
 </head>
@@ -62,30 +82,45 @@
         <div class="stat-card">
             <div class="stat-label">Tổng Vote Free Tích Lũy</div>
             <div class="stat-number votes"><span id="freeVotes">0</span> <span style="font-size:20px; color:#a8b0d3">vote</span></div>
+            <div class="stat-subtext">(Tính từ 14:45 ngày 06/10/2026)</div>
         </div>
 
         <div class="stat-card">
             <div class="stat-label">Quỹ Donate Dự Kiến</div>
-            <div class="stat-number money"><span id="totalMoney">0</span> <span style="font-size:24px;">VNĐ</span></div>
+            <div class="stat-number money"><span id="totalMoney">0</span> <span style="font-size:20px;">VNĐ</span></div>
+        </div>
+    </div>
+
+    <div class="last-updated" id="lastUpdatedText">Thời điểm cập nhật gần nhất: Đang kết nối...</div>
+
+    <!-- KHUNG ALBUM HÌNH ẢNH -->
+    <div class="album-section">
+        <div class="album-title">📸 Khoảnh khắc</div>
+        <div class="album-masonry">
+            <!-- Đổi đuôi .jpg thành .png hoặc .webp tùy vào đuôi hình thực tế của m nha -->
+            <div class="album-item"><img src="link-hinh-1.jpg" alt="Thien Minh"></div>
+            <div class="album-item"><img src="link-hinh-2.jpg" alt="Thien Minh"></div>
+            <div class="album-item"><img src="link-hinh-3.jpg" alt="Thien Minh"></div>
+            <div class="album-item"><img src="link-hinh-4.jpg" alt="Thien Minh"></div>
+            <div class="album-item"><img src="link-hinh-5.jpg" alt="Thien Minh"></div>
+            <div class="album-item"><img src="link-hinh-6.jpg" alt="Thien Minh"></div>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. Cấu hình Worker URL
+    // Link Worker chính thức của m (Không cần sửa nữa)
     const WORKER_URL = "https://api-donate-thienminh.lehaphuong510.workers.dev/";
     
-    // 2. Setup CountUp (Hiệu ứng chạy số)
     let moneyCountUp, votesCountUp;
     window.onload = () => {
         moneyCountUp = new countUp.CountUp('totalMoney', 0, { separator: '.', duration: 2.5 });
         votesCountUp = new countUp.CountUp('freeVotes', 0, { separator: '.', duration: 2 });
         moneyCountUp.start(); votesCountUp.start();
         fetchData();
-        setInterval(fetchData, 10000); // Tự động kéo API 10 giây/lần
+        setInterval(fetchData, 10000); 
     };
 
-    // 3. Hàm gọi data từ Worker
     let currentMoney = 0;
     async function fetchData() {
         try {
@@ -98,16 +133,22 @@
                 moneyCountUp.update(data.total_money);
                 currentMoney = data.total_money;
                 
-                // Bật hiệu ứng lấp lánh khi tiền tăng
                 const moneyEl = document.querySelector('.money');
                 moneyEl.classList.remove('sparkle-active');
-                void moneyEl.offsetWidth; // Trigger reflow
+                void moneyEl.offsetWidth; 
                 moneyEl.classList.add('sparkle-active');
             }
-        } catch (e) { console.log("Lỗi fetch data:", e); }
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('lastUpdatedText').innerText = `Thời điểm cập nhật gần nhất: Hôm nay lúc ${timeString}`;
+
+        } catch (e) { 
+            console.log("Lỗi fetch data:", e); 
+            document.getElementById('lastUpdatedText').innerText = `Thời điểm cập nhật gần nhất: Mất kết nối, đang thử lại...`;
+        }
     }
 
-    // 4. Đồng hồ đếm ngược đến 13h30 ngày 14/10/2026
     const endTime = new Date("October 14, 2026 13:30:00").getTime();
     setInterval(() => {
         const now = new Date().getTime();
