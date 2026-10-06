@@ -16,13 +16,21 @@ INITIAL_FREE_VOTES = 0
 
 # --- HÀM LẤY TỔNG VOTE TỪ LINK LỘN XỘN ---
 def get_total_votes():
-    res = requests.get(URL_CANDIDATE)
-    # Lục tìm chữ "totalVoteValue": con số
-    match = re.search(r'"totalVoteValue":(\d+)', res.text)
+    # Thêm dòng này để ngụy trang thành người dùng thật trên trình duyệt
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64 AppleWebKit/537.36)"}
+    res = requests.get(URL_CANDIDATE, headers=headers)
+    
+    # Quét siêu việt: Bỏ qua mọi dấu câu lằng nhằng, cứ sau chữ "totalVoteValue" có số là lụm
+    match = re.search(r'totalVoteValue[^\d]+(\d+)', res.text)
     if match:
         return int(match.group(1))
-    else:
-        raise Exception("Không tìm thấy số vote trong đống text!")
+    
+    # Dự phòng nếu hệ thống đổi tên biến thành voteCount
+    match_backup = re.search(r'voteCount[^\d]+(\d+)', res.text)
+    if match_backup:
+        return int(match_backup.group(1))
+        
+    raise Exception("Lỗi: Không tìm thấy số! Server trả về: " + res.text[:200])
 
 st.set_page_config(page_title="Hệ thống đếm Vote", layout="centered")
 st.title("🤖 Bot Tracking Vote Free 24/7")
