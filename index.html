@@ -364,7 +364,7 @@
     .card{padding:14px 12px;}
     .card .k{font-size:10px;letter-spacing:.16em;}
     .card .v{font-size:30px;}
-    .card .v em{font-size:11px;}
+    .card .v em{font-size:.3em;}
     .card .note{font-size:10.5px;}
     .updated{font-size:10.5px;}
     .fund{gap:6px;padding:8px 8px 5px;}
@@ -584,7 +584,14 @@
   function fitNumber(el, baseCqw) {          // số càng dài càng thu nhỏ, khỏi tràn thẻ
     const n = el.textContent.length;
     const k = n >= 14 ? 0.72 : n >= 12 ? 0.82 : n >= 10 ? 0.91 : 1;
-    el.style.fontSize = (baseCqw * k).toFixed(3) + 'cqw';
+    const host = el.parentElement;
+    // Mobile: .hero không còn là container nên cqw tính theo viewport -> số bị bé tí.
+    // Lấy thẳng theo bề ngang thẻ để giữ đúng độ "to" như trên desktop.
+    if (host && host.clientWidth && window.matchMedia('(max-width:900px)').matches) {
+      el.style.fontSize = (host.clientWidth * 0.13 * k).toFixed(2) + 'px';
+    } else {
+      el.style.fontSize = (baseCqw * k).toFixed(3) + 'cqw';
+    }
   }
   function countTo(el, from, to, dur) {
     if (from === to) { el.textContent = fmt(to); if (el.dataset.fit) fitNumber(el, Number(el.dataset.fit)); return; }
