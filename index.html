@@ -357,7 +357,7 @@
     .intro .punch{font-size:17px;column-span:none;}
     .fund-hint{font-size:11.5px;gap:6px;}
     .fund-hint svg{width:12px;height:12px;}
-    .stats{gap:12px;}
+    .stats{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
     .sparkles{inset:-10px -8px;}
     .sparkles i{width:13px;height:13px;}
     .sparkles i.lg{width:17px;height:17px;}
@@ -671,7 +671,7 @@
   window.addEventListener('resize', fitLineGroups);
 
   /* ===== Đếm ngược tới hạn chót: 13:30 ngày 14/10/2026 ===== */
-  const endTime = new Date("October 14, 2026 13:30:00").getTime();
+  const endTime = new Date("2026-10-14T13:30:00+07:00").getTime(); /* 13:30 giờ Việt Nam, cố định mọi múi giờ */
   const cdEl = document.getElementById('countdown');
   setInterval(() => {
     const dist = endTime - new Date().getTime();
