@@ -7,6 +7,8 @@
    So hien thi = TONG THAT tu dau giai (free + mua, moi giao dich = 1 luot)
    ------------------------------------------------------------------
    - Moi phut: doc cua so giao dich + diem tu API 1vote
+   - Nhan dien luot moi bang CAP (paymentTime + orderId): chi can 1 trong 2
+     khac la tinh luot moi -> chong ca truong hop trung mili-giay
    - Co luot moi -> ghi 1 moc lich su {t, v, p}
    - Khong doi -> khong ghi (chi nhip tim moi 3 gio)
    - GET  /            -> tom tat
@@ -22,7 +24,7 @@ const MONEY_PER_VOTE = 5000;
 
 /* Moc chuyen sang cach dem cong don:
    luc 07/10/2026 12:20:56 (VN), tong that tu dau giai = 332 giao dich. */
-const SCHEMA = 2;
+const SCHEMA = 3;
 const BASE_VOTES = 332;
 
 /* Gop thay doi qua sat nhau, tran an toan cho han ghi KV free tier (1000/ngay) */
@@ -57,8 +59,8 @@ async function getPoints() {
 }
 
 /* Lay cua so giao dich gan nhat (toi da 300 cai API dang giu) */
-async function getWindowTimes() {
-  const times = [];
+async function getWindow() {
+  const out = [];
   for (let page = 1; page <= MAX_PAGES; page++) {
     const res = await fetch(`${BASE}/transactions?page=${page}&limit=${PAGE_SIZE}&_=${Date.now()}`);
     if (!res.ok) throw new Error("tx " + res.status);
@@ -67,10 +69,10 @@ async function getWindowTimes() {
     if (!rows.length) break;
     for (const r of rows) {
       const t = Number(r.paymentTime);
-      if (isFinite(t)) times.push(t);
+      if (isFinite(t)) out.push({ t: t, id: String(r.orderId || "") });
     }
   }
-  return times;
+  return out;
 }
 
 async function loadState(env) {
@@ -87,31 +89,41 @@ async function tick(env, force) {
   const state = await loadState(env);
   const now = Date.now();
 
-  /* State cu (cach dem theo pagination.total) -> khoi tao lai */
-  const fresh = Number(state.schema) !== SCHEMA || !Array.isArray(state.seen) || state.seen.length === 0;
+  /* Chua co gi -> khoi tao. Schema cu (2) -> nang cap: tick nay van doi chieu
+     theo moc thoi gian nhu cu, dong thoi chuyen 'seen' sang dang cap. */
+  const fresh = !Array.isArray(state.seen) || state.seen.length === 0 || state.total_votes == null;
+  const upgrade = !fresh && Number(state.schema) !== SCHEMA;
   const prevVotes = fresh ? BASE_VOTES : (Number(state.total_votes) || 0);
   const prevPoints = state.points == null ? null : Number(state.points);
 
-  let times, points;
+  let rows, points;
   try {
-    times = await getWindowTimes();
+    rows = await getWindow();
     points = await getPoints();
   } catch (e) {
     return; /* API loi -> giu nguyen so cu, khong ghi de */
   }
 
-  /* Doi chieu tung giao dich trong cua so voi danh sach da thay */
-  const seen = new Set((fresh ? [] : state.seen || []).map(Number));
+  /* Doi chieu tung giao dich theo CAP paymentTime|orderId.
+     Tick nang cap doi chieu bang moc thoi gian (dang cu), sau do moi doi sang cap. */
+  const seen = new Set(fresh ? [] : state.seen || []);
   let added = 0;
-  for (const t of times) {
-    if (!seen.has(t)) { seen.add(t); if (!fresh) added++; }
+  for (const r of rows) {
+    const key = r.t + "|" + r.id;
+    if (!fresh) {
+      if (upgrade ? !seen.has(r.t) : !seen.has(key)) added++;
+    }
+    seen.delete(r.t);   /* bo dang so cu -> khong chiem 2 cho cho 1 giao dich */
+    seen.add(key);
   }
   const liveVotes = prevVotes + added;
 
-  /* Giu lai 400 moc gan nhat */
-  const seenArr = Array.from(seen).sort((a, b) => b - a).slice(0, SEEN_MAX);
+  /* Giu lai 400 moc gan nhat (xep theo paymentTime) */
+  const seenArr = Array.from(seen)
+    .sort((a, b) => Number(String(b).split("|")[0]) - Number(String(a).split("|")[0]))
+    .slice(0, SEEN_MAX);
 
-  const changed = fresh || liveVotes !== prevVotes || prevPoints !== points;
+  const changed = fresh || upgrade || liveVotes !== prevVotes || prevPoints !== points;
 
   if (!changed && !force) {
     if (now - (Number(state.last_check) || 0) < HEARTBEAT_MS) return;
@@ -121,7 +133,7 @@ async function tick(env, force) {
     return;
   }
 
-  if (!force && !fresh && now - (Number(state.last_write) || 0) < MIN_WRITE_GAP_MS) return;
+  if (!force && !fresh && !upgrade && now - (Number(state.last_write) || 0) < MIN_WRITE_GAP_MS) return;
 
   const history = fresh ? [] : (Array.isArray(state.history) ? state.history.slice() : []);
   history.push({ t: now, v: liveVotes, p: points });
