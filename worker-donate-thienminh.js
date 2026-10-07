@@ -1,12 +1,17 @@
 /* ============================================================
-   Worker: dem luot binh chon + GHI LICH SU (chi ghi khi so DOI)
-   - Moi phut: doc tong so giao dich (= so luot) + diem tu API 1vote
-   - So doi  -> ghi 1 moc vao lich su {t, v, p}
-   - Khong doi -> khong ghi (chi ghi nhip tim moi 3 gio de biet worker con song)
+   Worker: dem luot binh chon + GHI LICH SU
+   ------------------------------------------------------------------
+   QUAN TRONG: API 1vote chi giu 300 giao dich GAN NHAT (cua so truot),
+   nen pagination.total dung o 300 chu khong phai tong that.
+   => Worker tu dem cong don: so nao chua tung thay thi +1.
+   So hien thi = TONG THAT tu dau giai (free + mua, moi giao dich = 1 luot)
+   ------------------------------------------------------------------
+   - Moi phut: doc cua so giao dich + diem tu API 1vote
+   - Co luot moi -> ghi 1 moc lich su {t, v, p}
+   - Khong doi -> khong ghi (chi nhip tim moi 3 gio)
    - GET  /            -> tom tat
-   - GET  /?history=1  -> tom tat + toan bo lich su
+   - GET  /?history=1  -> tom tat + lich su
    - POST /            -> ep cap nhat ngay (can token)
-   So hien thi = TONG so giao dich tu dau giai (khong chia free/mua)
    ============================================================ */
 
 const KV_KEY = "donate_data";
@@ -15,14 +20,20 @@ const TOKEN = "Bearer THIENMINH_SECRET_2026";
 
 const MONEY_PER_VOTE = 5000;
 
-/* Gop cac thay doi qua sat nhau lai, tran an toan cho han ghi KV free tier (1000/ngay).
-   120s -> toi da 720 lan ghi/ngay. Vote tut van duoc ghi o tick ke tiep, khong mat. */
+/* Moc chuyen sang cach dem cong don:
+   luc 07/10/2026 12:20:56 (VN), tong that tu dau giai = 332 giao dich. */
+const SCHEMA = 2;
+const BASE_VOTES = 332;
+
+/* Gop thay doi qua sat nhau, tran an toan cho han ghi KV free tier (1000/ngay) */
 const MIN_WRITE_GAP_MS = 120000;
-/* Nhip tim: luc nao cung giu 1 moc moi 3 gio -> 8 lan ghi/ngay */
 const HEARTBEAT_MS = 3 * 3600 * 1000;
-/* Lich su: toi da 2000 moc, xoa moc cu hon 14 ngay */
 const HISTORY_MAX = 2000;
 const HISTORY_TTL_MS = 14 * 24 * 3600 * 1000;
+
+const PAGE_SIZE = 50;
+const MAX_PAGES = 6;      /* API chi giu 300 giao dich gan nhat */
+const SEEN_MAX = 400;     /* nho 400 moc gan nhat de doi chieu */
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,7 +47,6 @@ function json(obj) {
   });
 }
 
-/* --- doc API 1vote --- */
 async function getPoints() {
   const res = await fetch(BASE + "?_=" + Date.now(), { headers: { accept: "application/json" } });
   if (!res.ok) throw new Error("points " + res.status);
@@ -46,66 +56,90 @@ async function getPoints() {
   return p;
 }
 
-async function getVoteTotal() {
-  const res = await fetch(BASE + "/transactions?page=1&limit=1&_=" + Date.now(), { headers: { accept: "application/json" } });
-  if (!res.ok) throw new Error("tx " + res.status);
-  const j = await res.json();
-  const t = Number(j.data && j.data.pagination && j.data.pagination.total);
-  if (!isFinite(t)) throw new Error("no total");
-  return t;
+/* Lay cua so giao dich gan nhat (toi da 300 cai API dang giu) */
+async function getWindowTimes() {
+  const times = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const res = await fetch(`${BASE}/transactions?page=${page}&limit=${PAGE_SIZE}&_=${Date.now()}`);
+    if (!res.ok) throw new Error("tx " + res.status);
+    const j = await res.json();
+    const rows = (j.data && j.data.data) || [];
+    if (!rows.length) break;
+    for (const r of rows) {
+      const t = Number(r.paymentTime);
+      if (isFinite(t)) times.push(t);
+    }
+  }
+  return times;
 }
 
-/* --- doc / ghi KV --- */
 async function loadState(env) {
   const s = await env.DONATE_DB.get(KV_KEY, "json");
-  if (!s) return { total_votes: 0, total_money: 0, points: null, peak_votes: 0, peak_at: null, history: [], last_write: 0, last_check: 0 };
-  /* state cu (truoc khi doi cach dem) -> cho phep ghi lai ngay */
-  if (s.total_votes == null) s.last_write = 0;
-  return s;
+  if (s) return s;
+  return {
+    schema: SCHEMA, total_votes: BASE_VOTES, total_money: BASE_VOTES * MONEY_PER_VOTE,
+    points: null, peak_votes: BASE_VOTES, peak_at: null, seen: [], history: [],
+    last_write: 0, last_check: 0,
+  };
 }
 
 async function tick(env, force) {
   const state = await loadState(env);
   const now = Date.now();
 
-  let total, points;
+  /* State cu (cach dem theo pagination.total) -> khoi tao lai */
+  const fresh = Number(state.schema) !== SCHEMA || !Array.isArray(state.seen) || state.seen.length === 0;
+  const prevVotes = fresh ? BASE_VOTES : (Number(state.total_votes) || 0);
+  const prevPoints = state.points == null ? null : Number(state.points);
+
+  let times, points;
   try {
-    total = await getVoteTotal();
+    times = await getWindowTimes();
     points = await getPoints();
   } catch (e) {
-    return; /* API loi -> giu nguyen so cu, khong ghi de bang 0 */
+    return; /* API loi -> giu nguyen so cu, khong ghi de */
   }
 
-  const prevTotal = state.total_votes == null ? null : Number(state.total_votes);
-  const prevPoints = state.points == null ? null : Number(state.points);
-  const changed = prevTotal !== total || prevPoints !== points;
+  /* Doi chieu tung giao dich trong cua so voi danh sach da thay */
+  const seen = new Set((fresh ? [] : state.seen || []).map(Number));
+  let added = 0;
+  for (const t of times) {
+    if (!seen.has(t)) { seen.add(t); if (!fresh) added++; }
+  }
+  const liveVotes = prevVotes + added;
 
-  /* Khong doi gi: chi ghi nhip tim, va chi khi da qua 3 gio */
+  /* Giu lai 400 moc gan nhat */
+  const seenArr = Array.from(seen).sort((a, b) => b - a).slice(0, SEEN_MAX);
+
+  const changed = fresh || liveVotes !== prevVotes || prevPoints !== points;
+
   if (!changed && !force) {
     if (now - (Number(state.last_check) || 0) < HEARTBEAT_MS) return;
     state.last_check = now;
-    state.last_write = now; /* nhip tim cung tinh la 1 lan ghi -> khoa chan ghi trung */
+    state.last_write = now;
     await env.DONATE_DB.put(KV_KEY, JSON.stringify(state));
     return;
   }
 
-  /* Co doi nhung vua ghi xong -> de tick sau ghi, gop lai cho do ton luot ghi */
-  if (!force && now - (Number(state.last_write) || 0) < MIN_WRITE_GAP_MS) return;
+  if (!force && !fresh && now - (Number(state.last_write) || 0) < MIN_WRITE_GAP_MS) return;
 
-  const history = Array.isArray(state.history) ? state.history.slice() : [];
-  history.push({ t: now, v: total, p: points });
+  const history = fresh ? [] : (Array.isArray(state.history) ? state.history.slice() : []);
+  history.push({ t: now, v: liveVotes, p: points });
   const cutoff = now - HISTORY_TTL_MS;
   while (history.length && (history.length > HISTORY_MAX || history[0].t < cutoff)) history.shift();
 
-  const peakVotes = Math.max(Number(state.peak_votes) || 0, total);
-  const peakAt = peakVotes === total ? new Date(now).toISOString() : (state.peak_at || null);
+  const prevPeak = fresh ? 0 : (Number(state.peak_votes) || 0);
+  const peakVotes = Math.max(prevPeak, liveVotes);
+  const peakAt = peakVotes === liveVotes ? new Date(now).toISOString() : (state.peak_at || null);
 
   await env.DONATE_DB.put(KV_KEY, JSON.stringify({
-    total_votes: total,
-    total_money: total * MONEY_PER_VOTE,
+    schema: SCHEMA,
+    total_votes: liveVotes,
+    total_money: liveVotes * MONEY_PER_VOTE,
     points: points,
     peak_votes: peakVotes,
     peak_at: peakAt,
+    seen: seenArr,
     history: history,
     last_write: now,
     last_check: now,
@@ -119,8 +153,7 @@ export default {
 
     if (request.method === "GET") {
       const s = await loadState(env);
-      /* tuong thich state cu: chua co total_votes thi lay free_votes */
-      const total = Number(s.total_votes != null ? s.total_votes : (s.free_votes || 0)) || 0;
+      const total = Number(s.total_votes) || 0;
       const out = {
         total_votes: total,
         total_money: Number(s.total_money) || total * MONEY_PER_VOTE,
