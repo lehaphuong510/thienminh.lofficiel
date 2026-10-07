@@ -43,6 +43,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
+/* Gio Viet Nam (UTC+7, khong co DST) */
+function vn(ms) {
+  const d = new Date(Number(ms) + 7 * 3600 * 1000);
+  const p = n => String(n).padStart(2, "0");
+  return `${p(d.getUTCDate())}/${p(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ` +
+         `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+}
+
 function json(obj) {
   return new Response(JSON.stringify(obj), {
     headers: Object.assign({}, corsHeaders, { "Content-Type": "application/json" }),
@@ -98,8 +106,10 @@ async function tick(env, force) {
 
   let rows, points;
   try {
-    rows = await getWindow();
-    points = await getPoints();
+    /* goi song song cho 2 endpoint gan nhu cung luc -> do lech nho nhat */
+    const both = await Promise.all([getWindow(), getPoints()]);
+    rows = both[0];
+    points = both[1];
   } catch (e) {
     return; /* API loi -> giu nguyen so cu, khong ghi de */
   }
@@ -111,7 +121,10 @@ async function tick(env, force) {
   for (const r of rows) {
     const key = r.t + "|" + r.id;
     if (!fresh) {
-      if (upgrade ? !seen.has(r.t) : !seen.has(key)) added++;
+      /* Nang cap: doi chieu bang moc thoi gian (dang cu), nhung van kiem tra
+         ca khoa cap de mot giao dich xuat hien 2 lan trong 1 lan quet
+         cung khong bi dem 2 luot. */
+      if (upgrade ? (!seen.has(r.t) && !seen.has(key)) : !seen.has(key)) added++;
     }
     seen.delete(r.t);   /* bo dang so cu -> khong chiem 2 cho cho 1 giao dich */
     seen.add(key);
@@ -136,7 +149,7 @@ async function tick(env, force) {
   if (!force && !fresh && !upgrade && now - (Number(state.last_write) || 0) < MIN_WRITE_GAP_MS) return;
 
   const history = fresh ? [] : (Array.isArray(state.history) ? state.history.slice() : []);
-  history.push({ t: now, v: liveVotes, p: points });
+  history.push({ t: now, time: vn(now), v: liveVotes, p: points });
   const cutoff = now - HISTORY_TTL_MS;
   while (history.length && (history.length > HISTORY_MAX || history[0].t < cutoff)) history.shift();
 
@@ -174,7 +187,8 @@ export default {
         peak_votes: Number(s.peak_votes) || total,
         peak_at: s.peak_at || null,
         updated_at: s.updated_at || null,
-        last_check: s.last_check ? new Date(Number(s.last_check)).toISOString() : null,
+        last_check: s.last_check ? vn(s.last_check) + " (gio VN)" : null,
+        last_check_utc: s.last_check ? new Date(Number(s.last_check)).toISOString() : null,
         history_count: (s.history || []).length,
       };
       const url = new URL(request.url);
@@ -186,9 +200,12 @@ export default {
       if (request.headers.get("Authorization") !== TOKEN) {
         return new Response("Cam vao! Sai mat khau", { status: 401, headers: corsHeaders });
       }
+
+      /* Khong gui gi -> ep cap nhat ngay */
       await tick(env, true);
       const s = await loadState(env);
-      return json({ success: true, total_votes: Number(s.total_votes) || 0, updated_at: s.updated_at || null });
+      return json({ success: true, total_votes: Number(s.total_votes) || 0,
+                    last_check: s.last_check ? vn(s.last_check) : null });
     }
 
     return new Response("Not found", { status: 404 });
