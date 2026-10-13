@@ -815,11 +815,20 @@ async function fetchData() {
       setTimeout(()=>card.classList.remove('burst'),1450);
     }
     previousSprint=v.sprint_votes;previousSprintMoney=v.sprint_money;previousTotalMoney=v.total_money;
-    const stamp = data.last_check_utc || data.updated_at;
-    const date = stamp ? new Date(stamp) : null;
-    byId('lastUpdatedText').textContent = date && Number.isFinite(date.getTime()) ?
-      'Dữ liệu cập nhật: '+date.toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})+' (giờ VN)' :
-      'Đang chờ lần cập nhật đầu tiên';
+    const checkedAt = new Date();
+    byId('lastUpdatedText').textContent =
+      'Kiểm tra số liệu gần nhất: ' +
+      checkedAt.toLocaleString('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }) + ' (giờ VN)';
+    
     byId('lastUpdatedText').classList.remove('connection-error');
     updatePhase();fitNumbers();
   } catch (e) {
