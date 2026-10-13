@@ -550,6 +550,26 @@
 .phase-status{font:clamp(14px,.73cqw,16px)/1.4 var(--sans);color:#76552e;margin-top:6px;}
 .connection-error{color:#925034;}
 @media(max-width:900px){.metric-label{font-size:14px;}.phase-status{font-size:14px;}}
+</style><style id="sticky-sidebars">
+/* Hai cụm hình canh trên, bám khung nhìn khi cuộn — chỉ desktop. */
+@media (min-width:901px){
+  .hero{width:min(100%,2100px);overflow:clip;}
+  .col-left,.col-right{align-self:start;justify-content:flex-start;}
+}
+@media (min-width:901px) and (min-height:640px){
+  .col-left,.col-right{position:sticky;top:24px;}
+  .ph.poster{
+    height:min(25.5cqw,calc(100dvh - 340px));
+    width:min(100%,calc((100dvh - 340px)*.8));
+    align-self:center;
+  }
+  .ph.poster img{object-fit:contain;}
+  .tile{height:min(13.2cqw,calc((100dvh - 180px)/3));}
+}
+
+/* Popup nằm trên viewport, không bị khuất khi mở lúc đã cuộn xuống. */
+.modal{position:fixed;inset:0;z-index:50;}
+@media(min-width:901px){.modal-card{max-height:calc(100dvh - 48px);}}
 </style></head>
 <body>
 <!-- vân giấy khai báo 1 lần, dùng cho cả nền full màn hình lẫn khung 16:9 -->
@@ -686,6 +706,8 @@
 </div>
 </div>
 <!-- ---------- POPUP: thông tin chương trình & hình thức trao tặng ---------- -->
+
+</div>
 <div aria-labelledby="program-modal-title" aria-modal="true" class="modal" hidden="" id="program-modal" role="dialog">
 <div class="modal-backdrop" data-close=""></div>
 <div class="modal-card">
@@ -712,9 +734,7 @@
 </div>
 <p class="modal-note">*ghi chú: Đây là hoạt động do nhóm người hâm mộ Thiên Minh tự nguyện tổ chức và thực hiện, không đại diện cho tổ chức, đơn vị liên quan hoặc cá nhân anh Thiên Minh.</p>
 </div>
-</div>
-</div>
-<script>/* Dữ liệu thật từ worker hai giai đoạn; không có số liệu/demo vote giả. */
+</div><script>/* Dữ liệu thật từ worker hai giai đoạn; không có số liệu/demo vote giả. */
 const WORKER_URL = "https://api-donate-thienminh.lehaphuong510.workers.dev/";
 const SPRINT_START = Date.parse("2026-10-13T13:30:00+07:00");
 const VOTE_END = Date.parse("2026-10-14T13:30:00+07:00");
