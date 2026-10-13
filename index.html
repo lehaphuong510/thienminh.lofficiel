@@ -807,8 +807,7 @@ async function fetchData() {
     countTo(byId('sprintVotes'),previousSprint,v.sprint_votes,1200);
     countTo(byId('sprintMoney'),previousSprintMoney,v.sprint_money,1600);
     countTo(byId('allMoney'),previousTotalMoney,v.total_money,1600);
-    byId('formulaVotes').textContent = fmt(v.sprint_votes);
-    byId('formulaMoney').textContent = fmt(v.sprint_money);
+    
     byId('allVotes').textContent = fmt(v.total_votes);
     if (previousSprint!=null && v.sprint_votes>previousSprint) {
       const card=document.querySelector('.sprint-phase');
