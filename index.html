@@ -857,11 +857,12 @@ document.addEventListener('keydown',e=>{
 #handoverNotice .hn-close svg{width:18px;height:18px;}
 #handoverNotice .hn-close:hover{background:#f0e4cf;border-color:#8a6834;}
 #handoverNotice .hn-close:focus-visible{outline:3px solid #705025;outline-offset:3px;}
-#handoverNotice .hn-kicker{font:600 11px/1.5 Arial,sans-serif;letter-spacing:.24em;color:#795b30;margin:0 42px 18px;}
+#handoverNotice .hn-kicker{font:600 11px/1.5 Arial,sans-serif;letter-spacing:.24em;color:#795b30;margin:0 42px 8px;}
+#handoverNotice .hn-subtitle{font:600 11px/1.5 Arial,sans-serif;letter-spacing:.06em;color:#795b30;white-space:nowrap;margin:0 0 22px;}
 #handoverNotice .hn-ornament{display:flex;align-items:center;justify-content:center;gap:15px;color:#99743e;margin-bottom:14px;font-size:21px;}
 #handoverNotice .hn-ornament::before,#handoverNotice .hn-ornament::after{content:"";width:62px;height:1px;background:linear-gradient(90deg,transparent,#a8834a90);}
 #handoverNotice .hn-ornament::after{transform:rotate(180deg);}
-#handoverNotice h2{font:400 36px/1.15 "Times New Roman",serif;color:#725128;margin:0 0 24px;}
+#handoverNotice h2{font:400 36px/1.15 "Times New Roman",serif;color:#725128;margin:0 0 24px;white-space:nowrap;}
 #handoverNotice .hn-main{font-size:20px;line-height:1.55;margin:0;color:#403428;}
 #handoverNotice .hn-group{font-weight:700;}
 #handoverNotice .hn-amount{display:block;margin:18px 0 20px;font-weight:400;color:#805b28;line-height:1;}
@@ -878,7 +879,8 @@ document.addEventListener('keydown',e=>{
 @media(max-width:540px){
 #handoverNotice .hn-card{padding:40px 27px 27px;}
 #handoverNotice .hn-close{top:13px;right:13px;}
-#handoverNotice .hn-kicker{font-size:10px;letter-spacing:.16em;margin:0 32px 16px;}
+#handoverNotice .hn-kicker{font-size:10px;letter-spacing:.16em;margin:0 32px 8px;}
+#handoverNotice .hn-subtitle{font-size:10px;letter-spacing:.025em;margin-bottom:20px;}
 #handoverNotice h2{font-size:29px;margin-bottom:20px;}
 #handoverNotice .hn-main{font-size:18px;line-height:1.5;}
 #handoverNotice .hn-amount{margin:17px 0;}
@@ -893,9 +895,10 @@ document.addEventListener('keydown',e=>{
 <button type="button" class="hn-close" aria-label="Đóng thông báo" autofocus><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 <div class="hn-effects" aria-hidden="true"><span class="hn-star" style="--x:5%;--y:13%;--size:14px;--delay:-0.0s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-star" style="--x:93%;--y:19%;--size:18px;--delay:-0.6s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-star" style="--x:8%;--y:48%;--size:11px;--delay:-1.2s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-star" style="--x:94%;--y:63%;--size:14px;--delay:-1.7999999999999998s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-star" style="--x:5%;--y:83%;--size:18px;--delay:-2.4s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-star" style="--x:91%;--y:89%;--size:11px;--delay:-3.0s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-star" style="--x:28%;--y:5%;--size:14px;--delay:-3.5999999999999996s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-star" style="--x:71%;--y:5%;--size:18px;--delay:-4.2s"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1c1.2 7 4 9.8 11 11-7 1.2-9.8 4-11 11C10.8 16 8 13.2 1 12 8 10.8 10.8 8 12 1Z"/></svg></span><span class="hn-heart" style="--x:4%;--size:13px;--delay:-0.0s">♡</span><span class="hn-heart" style="--x:95%;--size:17px;--delay:-1.5s">♡</span><span class="hn-heart" style="--x:8%;--size:11px;--delay:-3.0s">♡</span><span class="hn-heart" style="--x:91%;--size:13px;--delay:-4.5s">♡</span><span class="hn-heart" style="--x:6%;--size:17px;--delay:-6.0s">♡</span><span class="hn-heart" style="--x:94%;--size:11px;--delay:-7.5s">♡</span></div>
 <p class="hn-kicker">NHÓM ĐỒNG LÒNG</p>
+<p class="hn-subtitle">NHÓM FAN HÂM MỘ CỦA NGHỆ SĨ THIÊN MINH &amp; THANH DUY</p>
 <div class="hn-ornament" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 2 16 8 22 12 16 16 12 22 8 16 2 12 8 8Z"/></svg></div>
 <h2 id="hn-title">Yêu thương đã được trao</h2>
-<p class="hn-main" id="hn-main"><span class="hn-group">Nhóm Đồng Lòng</span> - nhóm fan hâm mộ của nghệ sĩ Thiên Minh và Thanh Duy, đã trao số tiền
+<p class="hn-main" id="hn-main"><span class="hn-group">Nhóm Đồng Lòng</span> đã trao số tiền
 <span class="hn-amount"><strong>10.860.000</strong><span>VNĐ</span></span>
 tới nghệ sĩ Thiên Minh vào ngày <b>18/10/2026</b> tại địa điểm ghi hình <b>Mái ấm gia đình Việt</b> (Hoa Lư, Ninh Bình).</p>
 <p class="hn-note" id="hn-note">Số tiền này cùng với các khoản ủng hộ từ các bạn khác và nghệ sĩ Thiên Minh, đã được trao cho 3 gia đình vào cuối chương trình ngày ghi hình.</p>
@@ -907,11 +910,26 @@ tới nghệ sĩ Thiên Minh vào ngày <b>18/10/2026</b> tại địa điểm g
   const notice=document.getElementById('handoverNotice');
   const close=notice.querySelector('.hn-close');
   let previousOverflow;
+  // Giữ hai dòng tiêu đề trên một hàng; chỉ co cỡ chữ khi thật sự cần.
+  function fitNoticeLines(){
+    if(!notice.open)return;
+    notice.querySelectorAll('#hn-title,.hn-subtitle').forEach(el=>{
+      el.style.fontSize='';
+      const available=el.clientWidth;
+      if(available>0 && el.scrollWidth>available){
+        const base=parseFloat(getComputedStyle(el).fontSize);
+        el.style.fontSize=(base*available/el.scrollWidth*.985)+'px';
+      }
+    });
+  }
+  new ResizeObserver(fitNoticeLines).observe(notice);
+  document.fonts.ready.then(fitNoticeLines);
   function showNotice(){
     if(notice.open)return;
     previousOverflow=document.documentElement.style.overflow;
     document.documentElement.style.overflow='hidden';
     notice.showModal();
+    fitNoticeLines();
   }
   close.addEventListener('click',()=>notice.close());
   notice.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();close.focus();}});
